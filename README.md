@@ -1,4 +1,4 @@
-# Apex Financial Calculations for Saleforce
+# Apex Financial Calculations for Salesforce
 
 PV, PMT, FV, IPMT & PPMT Excel functions implemented in Apex.
 
