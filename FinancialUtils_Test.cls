@@ -10,6 +10,15 @@
 @IsTest
 private class FinancialUtils_Test {
 
+    @IsTest static void testRate(){
+
+        Integer nper = 24;
+        Double pmt = 4000;
+        Double pv = 90000;
+
+        System.assertEquals(FinancialUtils.rate(nper, pmt, -pv, 0, 0), 0.005228827926420765);      
+    }
+
     @IsTest static void testPv(){
 
         Double rate = 0.05;
@@ -18,7 +27,6 @@ private class FinancialUtils_Test {
         System.assertEquals(FinancialUtils.pv(rate, 24, pmt), 13798.641794347);     
         System.assertEquals(FinancialUtils.pv(rate, 36, pmt), 16546.85170756996); 
         System.assertEquals(FinancialUtils.pv(0, 24, pmt), 24000.0); 
-
     }
 
     @IsTest static void testPmt(){

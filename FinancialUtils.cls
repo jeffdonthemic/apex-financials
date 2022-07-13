@@ -1,5 +1,5 @@
 /**
- * A utility class for financial calculations
+ * A small utility class for financial calculations
  * 
  * 
  * Glossary: 
@@ -20,6 +20,57 @@
  */
 
 public with sharing class FinancialUtils {
+
+    private static Double FINANCIAL_PRECISION = 0.00000001; //1.0e-08
+	private static Double FINANCIAL_MAX_ITERATIONS = 128;
+     
+    /**
+     * Calculates the interest rate of an annuity investment based on constant-amount 
+     * periodic payments and the assumption of a constant interest rate.
+     * 
+     * @param npr 
+     * @param pmt 
+     * @param pv 
+     * @param fv 
+     * @param type 
+     * @return  `Double`
+     */
+    public static Double rate(Double npr, Double pmt, Double pv, Double fv, Integer type){
+		Double rate = 0.1;
+		Double y;
+		Double f = 0.0;
+		if (Math.abs(rate) < FINANCIAL_PRECISION) {
+	        y = pv * (1 + npr * rate) + pmt * (1 + rate  * type) * npr + fv;
+	    } else {
+	        f = Math.exp(npr * Math.log(1 + rate));
+	        y = pv * f + pmt * (1 / rate + type) * (f - 1) + fv;
+	    }
+		
+		Double y0 = pv + pmt * npr + fv;
+	    Double y1 = pv * f + pmt * (1 / rate + type) * (f - 1) + fv;
+
+	    // find root by secant method
+		Integer i = 0;
+	    Double x0 = 0.0;
+	    Double x1 = rate;
+		while ((Math.abs(y0 - y1) > FINANCIAL_PRECISION) && (i < FINANCIAL_MAX_ITERATIONS)) {
+			rate = (y1 * x0 - y0 * x1) / (y1 - y0);
+			x0 = x1;
+			x1 = rate;
+
+			if (Math.abs(rate) < FINANCIAL_PRECISION) {
+	            y = pv * (1 + npr * rate) + pmt * (1 + rate  * type) * npr + fv;
+			} else {
+				f = Math.exp(npr * Math.log(1 + rate));
+				y = pv * f + pmt * (1 / rate + type) * (f - 1) + fv;
+			}
+
+			y0 = y1;
+			y1 = y;
+			i++;
+	    }
+		return rate;
+	}
   
     /**
      * Calculates the present value of an annuity investment based on constant-amount periodic
@@ -56,6 +107,11 @@ public with sharing class FinancialUtils {
      */
     public static Double pmt(Double rate, Integer nper, Double pv, Double fv, Integer type) {
         Double pmt = rate / (Math.pow(1 + rate, nper) - 1) * -(pv * Math.pow(1 + rate, nper) + fv);
+
+        // account for payments at beginning of period versus end.
+        if (type == 1) {
+            pmt = pmt + (1 + rate);
+        }
         
         return pmt;
     }
